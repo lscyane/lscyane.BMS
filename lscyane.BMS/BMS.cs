@@ -1,0 +1,288 @@
+﻿using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.Linq;
+using System.Net.Http.Headers;
+
+namespace lscyane
+{
+    public class BMS
+    {
+        /// <summary> ヘッダ </summary>
+        public Header Header { get; } = new Header();
+
+        /// <summary> WAV定義 </summary>
+        public Dictionary<int, string> WAV { get; } = new Dictionary<int, string>();
+        /// <summary> BMP定義 </summary>
+        public Dictionary<int, string> BMP { get; } = new Dictionary<int, string>();
+        /// <summary> BPM定義 </summary>
+        public Dictionary<int, decimal> BPMDefs { get; } = new Dictionary<int, decimal>();
+        /// <summary> STOP定義 </summary>
+        public Dictionary<int, int> STOP { get; } = new Dictionary<int, int>();
+
+        /// <summary> ノート </summary>
+        public List<Note> Notes { get; } = new List<Note>();
+
+
+        /// <summary>
+        /// BMSファイルを書き出す
+        /// </summary>
+        /// <param name="path"></param>
+        public void Save(string path)
+        {
+            using var sw = new System.IO.StreamWriter(path, false, System.Text.Encoding.UTF8);
+
+            // --------------------------
+            // ヘッダ出力
+            // --------------------------
+            void WriteHeader(string key, object value)
+            {
+                if (value == null) return;
+                sw.WriteLine($"{key}: {value}");
+            }
+            WriteHeader("#TITLE", Header.TITLE);
+            WriteHeader("#ARTIST", Header.ARTIST);
+            WriteHeader("#STAGEFILE", Header.STAGEFILE);
+            WriteHeader("#DLEVEL", Header.DLEVEL);
+            sw.WriteLine("");
+            WriteHeader("#GENRE", Header.GENRE);
+            WriteHeader("#PLAYLEVEL", Header.PLAYLEVEL);
+            WriteHeader("#RANK", Header.RANK);
+            WriteHeader("#PLAYER", Header.PLAYER);
+            WriteHeader("#TOTAL", Header.TOTAL);
+            WriteHeader("#BPM", Header.BPM);
+            sw.WriteLine("");
+
+            // --------------------------
+            // 定義系出力
+            // --------------------------
+            foreach (var kv in WAV.OrderBy(k => k.Key))
+            {
+                sw.WriteLine($"#WAV{Converter.IntToBase36(kv.Key, 2)}: {kv.Value}");
+            }
+            sw.WriteLine("");
+            foreach (var kv in BMP.OrderBy(k => k.Key))
+            {
+                sw.WriteLine($"#BMP{Converter.IntToBase36(kv.Key, 2)}: {kv.Value}");
+            }
+            sw.WriteLine("");
+            foreach (var kv in BPMDefs.OrderBy(k => k.Key))
+            {
+                sw.WriteLine($"#BPM{Converter.IntToBase36(kv.Key, 2)}: {kv.Value}");
+            }
+            sw.WriteLine("");
+            foreach (var kv in STOP.OrderBy(k => k.Key))
+            {
+                sw.WriteLine($"#STOP{Converter.IntToBase36(kv.Key, 2)}: {kv.Value}");
+            }
+
+            // --------------------------
+            // ノート出力（小節・チャンネル・Denominatorごとにグループ化）
+            // --------------------------
+            var notesByMeasureChannelDen = Notes
+                // 小節番号、チャンネル番号、Denominatorごとにグループ化
+                .GroupBy(n => new { n.Measure, n.Channel, n.Denominator })
+                // 小節番号→チャンネル番号→Denominatorの順でソート
+                .OrderBy(g => g.Key.Measure)
+                .ThenBy(g => g.Key.Channel)
+                .ThenBy(g => g.Key.Denominator);
+
+            foreach (var group in notesByMeasureChannelDen)
+            {
+                int measure = group.Key.Measure;            // 小節番号
+                int channel = group.Key.Channel;            // チャンネル番号
+                int denominator = group.Key.Denominator;    // 分母（小節内の分割数）
+
+                // 小節・チャンネル・Denominatorごとのノート一覧をNumerator順に並べ替え
+                var notesInGroup = group.OrderBy(n => n.Numerator).ToList();
+
+                // 出力用の文字列を作成（'0'で初期化、各ノートが2文字ずつ使用）
+                char[] data = new string('0', denominator * 2).ToCharArray();
+
+                foreach (var note in notesInGroup)
+                {
+                    // ノートの値を36進数2桁に変換
+                    var hex = Converter.IntToBase36(note.Value, 2);
+
+                    // Numeratorの位置に2文字分を埋め込む
+                    data[note.Numerator * 2] = hex[0];
+                    data[note.Numerator * 2 + 1] = hex[1];
+                }
+
+                // 出力例: #0010A:00001700...
+                // 小節番号3桁＋チャンネル2桁（36進数）＋:＋データ列
+                sw.WriteLine($"#{measure:000}{Converter.IntToBase36(channel, 2)}:{new string(data)}");
+            }
+        }
+
+
+        /// <summary>
+        /// BMSファイルを読み込む
+        /// </summary>
+        public static BMS Load(string path)
+        {
+            var bms = new BMS();
+
+            var sr = System.IO.File.OpenText(path);
+            while (!sr.EndOfStream)
+            {
+                var line = sr.ReadLine()?.Trim();
+                if (string.IsNullOrEmpty(line) || !line.StartsWith("#"))
+                    continue;
+
+                // ヘッダ系の判定
+                if (ParseHeader(bms, line))
+                    continue;
+
+                // 定義系の判定
+                if (ParseDefinition(bms, line))
+                    continue;
+
+                // ノート系の判定
+                if (ParseNotes(bms, line))
+                    continue;
+
+                // ここまで来たら不明な行
+                System.Diagnostics.Debug.WriteLine("[Warning] 不明な行をスキップしました");
+                System.Diagnostics.Debug.WriteLine("       -> " + line);
+            }
+
+            return bms;
+        }
+
+
+        /// <summary>
+        ///  ヘッダ系の判定
+        /// </summary>
+        /// <returns>true:ヘッダ  false:ヘッダではなかった</returns>
+        static bool ParseHeader(BMS bms, string line)
+        {
+            string key, value;
+            if (line.Contains(":"))
+            {
+                // コロン区切り (#TITLE:曲名)
+                var parts = line.Split(':', 2, StringSplitOptions.RemoveEmptyEntries);
+                if (parts.Length < 2) return false;
+                key = parts[0].Trim().ToUpperInvariant();
+                value = parts[1].Trim();
+            }
+            else
+            {
+                // スペース区切り (#TITLE 曲名)
+                var parts = line.Split(' ', 2, StringSplitOptions.RemoveEmptyEntries);
+                if (parts.Length < 2) return false;
+                key = parts[0].Trim().ToUpperInvariant();
+                value = parts[1].Trim();
+            }
+
+            // ヘッダ情報を設定
+            switch (key)
+            {
+                case "#TITLE": bms.Header.TITLE = value; break;
+                case "#ARTIST": bms.Header.ARTIST = value; break;
+                case "#STAGEFILE": bms.Header.STAGEFILE = value; break;
+                case "#DLEVEL": bms.Header.DLEVEL = value; break;
+                case "#GENRE": bms.Header.GENRE = value; break;
+                case "#PLAYLEVEL": bms.Header.PLAYLEVEL = int.TryParse(value, out var plv) ? plv : 0; break;
+                case "#RANK": bms.Header.RANK = int.TryParse(value, out var rnk) ? rnk : 0; break;
+                case "#PLAYER": bms.Header.PLAYER = int.TryParse(value, out var ply) ? ply : 0; break;
+                case "#TOTAL": bms.Header.TOTAL = int.TryParse(value, out var tot) ? tot : 0; break;
+                case "#BPM": bms.Header.BPM = decimal.TryParse(value, out var bpm) ? bpm : 0; break;
+                default:    return false;   // 処理可能なヘッダではない
+            }
+
+            return true;
+        }
+
+
+        /// <summary>
+        /// 定義系の判定
+        /// </summary>
+        /// <returns>true:定義系  false:定義系ではなかった</returns>
+        static bool ParseDefinition(BMS bms, string line)
+        {
+            // 定義系 (#WAV01 xxx.wav)
+            if (!line.Contains(" ")) return false;
+            var parts = line.Split(' ', 2, StringSplitOptions.RemoveEmptyEntries);
+            if (parts.Length < 2) return false;
+            var key = parts[0].Trim().ToUpperInvariant();
+            var value = parts[1].Trim();
+            if (key.StartsWith("#WAV"))
+            {
+                var idStr = key.Substring(4,2); // "01" 部分
+                if (!Converter.TryParseBase36(idStr, out var id))
+                    return false;
+                bms.WAV[id] = value;
+                return true;
+            }
+            else if (key.StartsWith("#BMP"))
+            {
+                var idStr = key.Substring(4,2); // "01" 部分
+                if (!Converter.TryParseBase36(idStr, out var id))
+                    return false;
+                bms.BMP[id] = value;
+                return true;
+            }
+            else if (key.StartsWith("#BPM"))
+            {
+                var idStr = key.Substring(4,2); // "01" 部分
+                if (!Converter.TryParseBase36(idStr, out var id))
+                    return false;
+                if (!decimal.TryParse(value, out var bpmValue))
+                    return false;
+                bms.BPMDefs[id] = bpmValue;
+                return true;
+            }
+            return false; // 処理可能な定義ではない
+        }
+
+
+        /// <summary>
+        /// ノート系の判定
+        /// </summary>
+        /// <returns>true:ノート系  false:ノート系ではなかった</returns>
+        static bool ParseNotes(BMS bms, string line)
+        {
+            // ノート系 (#<小節番号><チャンネル>:<データ列>)
+            var header = line.Substring(1, 5); // "00111" 部分
+            if (!int.TryParse(header.Substring(0, 3), out var measure)) return false;
+            if (!Converter.TryParseBase36(header.Substring(3, 2), out var channel)) return false;
+
+            var data = line[(1 + 5 + 1)..].Trim();  // ":"以降
+            if (data.Length % 2 != 0)               // 2桁ごとに区切られる
+            {
+                System.Diagnostics.Debug.WriteLine("[Warning] ノート定義データ部が偶数桁になっていない");
+                System.Diagnostics.Debug.WriteLine("       -> " + data);
+                return false;
+            }
+
+            var denominator = data.Length / 2;
+            for (int i = 0; i < denominator; i++)
+            {
+                var token = data.Substring(i * 2, 2);
+
+                // 00のデータは無視
+                if (token == "00") continue;
+
+                if (!Converter.TryParseBase36(token, out var value))
+                {
+                    System.Diagnostics.Debug.WriteLine("[Warning] ノートのデータ部をパースできませんでした");
+                    System.Diagnostics.Debug.WriteLine("  data -> " + data);
+                    System.Diagnostics.Debug.WriteLine("  token-> " + token);
+                    continue;
+                }
+
+                bms.Notes.Add(new Note
+                {
+                    Channel = channel,
+                    Measure = measure,
+                    Value = value,
+                    Numerator = i,
+                    Denominator = denominator
+                });
+            }
+
+            return true;
+        }
+    }
+}
