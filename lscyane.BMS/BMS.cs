@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http.Headers;
+using System.Text;
 
 namespace lscyane
 {
@@ -28,9 +29,15 @@ namespace lscyane
         /// BMSファイルを書き出す
         /// </summary>
         /// <param name="path"></param>
-        public void Save(string path)
+        public void Save(string path, Encoding? enc = null)
         {
-            using var sw = new System.IO.StreamWriter(path, false, System.Text.Encoding.UTF8);
+            Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
+            if (enc == null)
+            {
+                enc = Encoding.GetEncoding("Shift_JIS");
+            }
+
+            using var sw = new System.IO.StreamWriter(path, false, enc);
 
             // --------------------------
             // ヘッダ出力
@@ -127,11 +134,17 @@ namespace lscyane
         /// <summary>
         /// BMSファイルを読み込む
         /// </summary>
-        public static BMS Load(string path)
+        public static BMS Load(string path, Encoding? enc = null)
         {
             var bms = new BMS();
 
-            var sr = System.IO.File.OpenText(path);
+            Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
+            if (enc == null)
+            {
+                enc = Encoding.GetEncoding("Shift_JIS");
+            }
+
+            var sr = new System.IO.StreamReader(path, enc);
             while (!sr.EndOfStream)
             {
                 var line = sr.ReadLine()?.Trim();
