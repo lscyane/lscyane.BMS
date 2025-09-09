@@ -42,15 +42,23 @@ namespace lscyane
             }
             WriteHeader("#TITLE", Header.TITLE);
             WriteHeader("#ARTIST", Header.ARTIST);
+            WriteHeader("#COMMENT", Header.COMMENT);
+            WriteHeader("#PANEL", Header.PANEL);
+            WriteHeader("#PREVIEW", Header.PREVIEW);
+            WriteHeader("#PREIMAGE", Header.PREIMAGE);
             WriteHeader("#STAGEFILE", Header.STAGEFILE);
+            WriteHeader("#BACKGROUND", Header.BACKGROUND);
+            WriteHeader("#RESULTIMAGE", Header.RESULTIMAGE);
+            WriteHeader("#BPM", Header.BPM);
             WriteHeader("#DLEVEL", Header.DLEVEL);
+            WriteHeader("#GLEVEL", Header.GLEVEL);
+            WriteHeader("#BLEVEL", Header.BLEVEL);
             sw.WriteLine("");
             WriteHeader("#GENRE", Header.GENRE);
             WriteHeader("#PLAYLEVEL", Header.PLAYLEVEL);
             WriteHeader("#RANK", Header.RANK);
             WriteHeader("#PLAYER", Header.PLAYER);
             WriteHeader("#TOTAL", Header.TOTAL);
-            WriteHeader("#BPM", Header.BPM);
             sw.WriteLine("");
 
             // --------------------------
@@ -180,14 +188,22 @@ namespace lscyane
             {
                 case "#TITLE": bms.Header.TITLE = value; break;
                 case "#ARTIST": bms.Header.ARTIST = value; break;
+                case "#COMMENT": bms.Header.COMMENT = value; break;
+                case "#PANEL": bms.Header.PANEL = value; break;
+                case "#PREVIEW": bms.Header.PREVIEW = value; break;
+                case "#PREIMAGE": bms.Header.PREIMAGE = value; break;
                 case "#STAGEFILE": bms.Header.STAGEFILE = value; break;
+                case "#BACKGROUND": bms.Header.BACKGROUND = value; break;
+                case "#RESULTIMAGE": bms.Header.RESULTIMAGE = value; break;
+                case "#BPM": bms.Header.BPM = decimal.TryParse(value, out var bpm) ? bpm : 0; break;
                 case "#DLEVEL": bms.Header.DLEVEL = value; break;
+                case "#GLEVEL": bms.Header.GLEVEL = value; break;
+                case "#BLEVEL": bms.Header.BLEVEL = value; break;
                 case "#GENRE": bms.Header.GENRE = value; break;
                 case "#PLAYLEVEL": bms.Header.PLAYLEVEL = int.TryParse(value, out var plv) ? plv : 0; break;
                 case "#RANK": bms.Header.RANK = int.TryParse(value, out var rnk) ? rnk : 0; break;
                 case "#PLAYER": bms.Header.PLAYER = int.TryParse(value, out var ply) ? ply : 0; break;
                 case "#TOTAL": bms.Header.TOTAL = int.TryParse(value, out var tot) ? tot : 0; break;
-                case "#BPM": bms.Header.BPM = decimal.TryParse(value, out var bpm) ? bpm : 0; break;
                 default:    return false;   // 処理可能なヘッダではない
             }
 
