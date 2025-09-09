@@ -26,13 +26,23 @@ namespace lscyane
         /// </summary>
         /// <param name="bpm"></param>
         /// <returns></returns>
-        public decimal GetTime(decimal bpm)
+        public double GetTime(double bpm)
         {
             if (bpm <= 0) return 0;
-            var beatDuration = 60000m / bpm;                        // 1拍の長さ[ms]
-            var positionInBeats = (decimal)Numerator / Denominator; // 拍位置(4分音符を1拍とする)
+            var beatDuration = 60000.0 / bpm;                        // 1拍の長さ[ms]
+            var positionInBeats = (double)Numerator / Denominator; // 拍位置(4分音符を1拍とする)
             var timeInMs = beatDuration * positionInBeats;          // ノートのタイミング[ms]
             return timeInMs;
         }
+
+        /// <summary>
+        /// 小節内の Tick 値（分数を整数化）
+        /// </summary>
+        public double BeatPosition => (double)Numerator / Denominator;
+
+        /// <summary>
+        /// 時間軸上の絶対位置（小節番号＋小節内位置）
+        /// </summary>
+        public double AbsolutePosition => Measure + BeatPosition;
     }
 }
