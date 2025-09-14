@@ -9,6 +9,28 @@ namespace lscyane
         /// <summary>
         /// 36進数パーサー
         /// </summary>
+        public static int ParseBase36(string s)
+        {
+            var result = 0;
+            if (string.IsNullOrEmpty(s)) throw new FormatException();
+
+            s = s.ToUpperInvariant();
+            foreach (var c in s)
+            {
+                int val;
+                if (c >= '0' && c <= '9') val = c - '0';
+                else if (c >= 'A' && c <= 'Z') val = c - 'A' + 10;
+                else throw new FormatException(); // 0-9/A-Z以外は不可
+
+                result = result * 36 + val;
+            }
+            return result;
+        }
+
+
+        /// <summary>
+        /// 36進数パーサー
+        /// </summary>
         public static bool TryParseBase36(string s, out int result)
         {
             result = 0;
