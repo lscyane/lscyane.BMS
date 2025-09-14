@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace lscyane
+namespace lscyane.BMS
 {
     public class Note
     {

@@ -5,9 +5,12 @@ using System.Linq;
 using System.Net.Http.Headers;
 using System.Text;
 
-namespace lscyane
+namespace lscyane.BMS
 {
-    public class BMS
+    /// <summary>
+    /// BMS形式クラス
+    /// </summary>
+    public class Format
     {
         /// <summary> ヘッダ </summary>
         public Header Header { get; } = new Header();
@@ -134,9 +137,9 @@ namespace lscyane
         /// <summary>
         /// BMSファイルを読み込む
         /// </summary>
-        public static BMS Load(string path, Encoding? enc = null)
+        public static Format Load(string path, Encoding? enc = null)
         {
-            var bms = new BMS();
+            var bms = new Format();
 
             Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
             if (enc == null)
@@ -176,7 +179,7 @@ namespace lscyane
         ///  ヘッダ系の判定
         /// </summary>
         /// <returns>true:ヘッダ  false:ヘッダではなかった</returns>
-        static bool ParseHeader(BMS bms, string line)
+        static bool ParseHeader(Format bms, string line)
         {
             string key, value;
             if (line.Contains(":"))
@@ -228,7 +231,7 @@ namespace lscyane
         /// 定義系の判定
         /// </summary>
         /// <returns>true:定義系  false:定義系ではなかった</returns>
-        static bool ParseDefinition(BMS bms, string line)
+        static bool ParseDefinition(Format bms, string line)
         {
             // 定義系 (#WAV01 xxx.wav)
             if (!line.Contains(" ")) return false;
@@ -270,7 +273,7 @@ namespace lscyane
         /// ノート系の判定
         /// </summary>
         /// <returns>true:ノート系  false:ノート系ではなかった</returns>
-        static bool ParseNotes(BMS bms, string line)
+        static bool ParseNotes(Format bms, string line)
         {
             // ノート系 (#<小節番号><チャンネル>:<データ列>)
             var header = line.Substring(1, 5); // "00111" 部分
