@@ -1,8 +1,6 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using System.Net.Http.Headers;
 using System.Text;
 
 namespace lscyane.BMS
@@ -108,7 +106,7 @@ namespace lscyane.BMS
             foreach (var group in notesByMeasureChannelDen)
             {
                 int measure = group.Key.Measure;            // 小節番号
-                int channel = group.Key.Channel;            // チャンネル番号
+                var channel = group.Key.Channel;            // チャンネル番号
                 int denominator = group.Key.Denominator;    // 分母（小節内の分割数）
 
                 // 小節・チャンネル・Denominatorごとのノート一覧をNumerator順に並べ替え
@@ -119,17 +117,14 @@ namespace lscyane.BMS
 
                 foreach (var note in notesInGroup)
                 {
-                    // ノートの値を36進数2桁に変換
-                    var hex = Converter.IntToBase36(note.Value, 2);
-
                     // Numeratorの位置に2文字分を埋め込む
-                    data[note.Numerator * 2] = hex[0];
-                    data[note.Numerator * 2 + 1] = hex[1];
+                    data[note.Numerator * 2] = note.Value[0];
+                    data[note.Numerator * 2 + 1] = note.Value[1];
                 }
 
                 // 出力例: #0010A:00001700...
                 // 小節番号3桁＋チャンネル2桁（36進数）＋:＋データ列
-                sw.WriteLine($"#{measure:000}{Converter.IntToBase36(channel, 2)}:{new string(data)}");
+                sw.WriteLine($"#{measure:000}{channel}:{new string(data)}");
             }
         }
 
@@ -278,7 +273,14 @@ namespace lscyane.BMS
             // ノート系 (#<小節番号><チャンネル>:<データ列>)
             var header = line.Substring(1, 5); // "00111" 部分
             if (!int.TryParse(header.Substring(0, 3), out var measure)) return false;
-            if (!Converter.TryParseBase36(header.Substring(3, 2), out var channel)) return false;
+
+            var channel = header.Substring(3, 2);
+            if (channel.Length != 2)
+            {
+                System.Diagnostics.Debug.WriteLine("[Warning] チャンネル番号の長さが2ではない");
+                System.Diagnostics.Debug.WriteLine("       -> " + channel);
+                return false;
+            }
 
             var data = line[(1 + 5 + 1)..].Trim();  // ":"以降
             if (data.Length % 2 != 0)               // 2桁ごとに区切られる
@@ -291,18 +293,10 @@ namespace lscyane.BMS
             var denominator = data.Length / 2;
             for (int i = 0; i < denominator; i++)
             {
-                var token = data.Substring(i * 2, 2);
+                var value = data.Substring(i * 2, 2);
 
                 // 00のデータは無視
-                if (token == "00") continue;
-
-                if (!Converter.TryParseBase36(token, out var value))
-                {
-                    System.Diagnostics.Debug.WriteLine("[Warning] ノートのデータ部をパースできませんでした");
-                    System.Diagnostics.Debug.WriteLine("  data -> " + data);
-                    System.Diagnostics.Debug.WriteLine("  token-> " + token);
-                    continue;
-                }
+                if (value == "00") continue;
 
                 bms.Notes.Add(new Note
                 {

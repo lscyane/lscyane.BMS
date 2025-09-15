@@ -1,19 +1,17 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace lscyane.BMS
 {
     public class Note
     {
         /// <summary> チャンネル番号 </summary>
-        public int Channel { get; set; }
+        public string Channel { get; set; } = "00";
 
         /// <summary> 小説番号 </summary>
         public int Measure { get; set; }
 
         /// <summary> ノートの値 </summary>
-        public int Value { get; set; }
+        public string Value { get; set; } = "00";
 
         /// <summary> 分子 </summary>
         public int Numerator { get; set; }
