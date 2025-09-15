@@ -14,9 +14,9 @@ namespace lscyane.BMS
         public Header Header { get; } = new Header();
 
         /// <summary> WAV定義 </summary>
-        public Dictionary<int, string> WAV { get; } = new Dictionary<int, string>();
+        public Dictionary<string, Table> WAV { get; } = new Dictionary<string, Table>();
         /// <summary> BMP定義 </summary>
-        public Dictionary<int, string> BMP { get; } = new Dictionary<int, string>();
+        public Dictionary<string, Table> BMP { get; } = new Dictionary<string, Table>();
         /// <summary> BPM定義 </summary>
         public Dictionary<int, decimal> BPMDefs { get; } = new Dictionary<int, decimal>();
         /// <summary> STOP定義 </summary>
@@ -74,12 +74,14 @@ namespace lscyane.BMS
             // --------------------------
             foreach (var kv in WAV.OrderBy(k => k.Key))
             {
-                sw.WriteLine($"#WAV{Converter.IntToBase36(kv.Key, 2)}: {kv.Value}");
+                var comment = string.IsNullOrEmpty(kv.Value.Comment) ? "" : $"\t;{kv.Value.Comment}";
+                sw.WriteLine($"#WAV{kv.Key}: {kv.Value.Data}{comment}");
             }
             sw.WriteLine("");
             foreach (var kv in BMP.OrderBy(k => k.Key))
             {
-                sw.WriteLine($"#BMP{Converter.IntToBase36(kv.Key, 2)}: {kv.Value}");
+                var comment = string.IsNullOrEmpty(kv.Value.Comment) ? "" : $"\t;{kv.Value.Comment}";
+                sw.WriteLine($"#BMP{kv.Key, 2}: {kv.Value}");
             }
             sw.WriteLine("");
             foreach (var kv in BPMDefs.OrderBy(k => k.Key))
@@ -230,24 +232,20 @@ namespace lscyane.BMS
         {
             // 定義系 (#WAV01 xxx.wav)
             if (!line.Contains(" ")) return false;
-            var parts = line.Split(' ', 2, StringSplitOptions.RemoveEmptyEntries);
+            var parts = line.Replace('\t',' ').Split(' ', 2, StringSplitOptions.RemoveEmptyEntries);
             if (parts.Length < 2) return false;
             var key = parts[0].Trim().ToUpperInvariant();
             var value = parts[1].Trim();
             if (key.StartsWith("#WAV"))
             {
                 var idStr = key.Substring(4,2); // "01" 部分
-                if (!Converter.TryParseBase36(idStr, out var id))
-                    return false;
-                bms.WAV[id] = value;
+                bms.WAV[idStr] = new Table(value);
                 return true;
             }
             else if (key.StartsWith("#BMP"))
             {
                 var idStr = key.Substring(4,2); // "01" 部分
-                if (!Converter.TryParseBase36(idStr, out var id))
-                    return false;
-                bms.BMP[id] = value;
+                bms.BMP[idStr] = new Table(value);
                 return true;
             }
             else if (key.StartsWith("#BPM"))
