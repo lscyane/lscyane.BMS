@@ -18,7 +18,7 @@ namespace lscyane.BMS
         /// <summary> BMP定義 </summary>
         public Dictionary<string, Table> BMP { get; } = new Dictionary<string, Table>();
         /// <summary> BPM定義 </summary>
-        public Dictionary<int, decimal> BPMDefs { get; } = new Dictionary<int, decimal>();
+        public Dictionary<string, double> BPMDefs { get; } = new Dictionary<string, double>();
         /// <summary> STOP定義 </summary>
         public Dictionary<int, int> STOP { get; } = new Dictionary<int, int>();
 
@@ -86,7 +86,7 @@ namespace lscyane.BMS
             sw.WriteLine("");
             foreach (var kv in BPMDefs.OrderBy(k => k.Key))
             {
-                sw.WriteLine($"#BPM{Converter.IntToBase36(kv.Key, 2)}: {kv.Value}");
+                sw.WriteLine($"#BPM{kv.Key, 2}: {kv.Value}");
             }
             sw.WriteLine("");
             foreach (var kv in STOP.OrderBy(k => k.Key))
@@ -251,11 +251,9 @@ namespace lscyane.BMS
             else if (key.StartsWith("#BPM"))
             {
                 var idStr = key.Substring(4,2); // "01" 部分
-                if (!Converter.TryParseBase36(idStr, out var id))
+                if (!double.TryParse(value, out var bpmValue))
                     return false;
-                if (!decimal.TryParse(value, out var bpmValue))
-                    return false;
-                bms.BPMDefs[id] = bpmValue;
+                bms.BPMDefs[idStr] = bpmValue;
                 return true;
             }
             return false; // 処理可能な定義ではない
