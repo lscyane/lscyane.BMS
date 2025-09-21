@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 
 namespace lscyane.BMS
 {
@@ -7,7 +8,7 @@ namespace lscyane.BMS
         /// <summary> チャンネル番号 </summary>
         public string Channel { get; set; } = "00";
 
-        /// <summary> 小説番号 </summary>
+        /// <summary> 小節番号 </summary>
         public int Measure { get; set; }
 
         /// <summary> ノートの値 </summary>
@@ -19,6 +20,7 @@ namespace lscyane.BMS
         /// <summary> 分母 </summary>
         public int Denominator { get; set; }
 
+
         /// <summary>
         /// BPMと拍位置からノートのタイミング[ms]を算出する
         /// </summary>
@@ -27,16 +29,17 @@ namespace lscyane.BMS
         public double GetTime(double bpm)
         {
             if (bpm <= 0) return 0;
-            var beatDuration = 60000.0 / bpm;                        // 1拍の長さ[ms]
-            var positionInBeats = (double)Numerator / Denominator; // 拍位置(4分音符を1拍とする)
-            var timeInMs = beatDuration * positionInBeats;          // ノートのタイミング[ms]
+            var beatDuration = 60000.0 / bpm;                                // 1拍の長さ[ms]
+            var positionInBeats = (double)this.Numerator / this.Denominator; // 拍位置(4分音符を1拍とする)
+            var timeInMs = beatDuration * positionInBeats;                   // ノートのタイミング[ms]
             return timeInMs;
         }
 
+
         /// <summary>
-        /// 小節内の Tick 値（分数を整数化）
+        /// 小節内の Tick 値（分数を自然数化）
         /// </summary>
-        public double BeatPosition => (double)Numerator / Denominator;
+        public double BeatPosition => (double)this.Numerator / this.Denominator;
 
         /// <summary>
         /// 時間軸上の絶対位置（小節番号＋小節内位置）

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Xml.Linq;
 
 namespace lscyane.BMS
 {
@@ -21,6 +22,9 @@ namespace lscyane.BMS
         public Dictionary<string, double> BPMDefs { get; } = new Dictionary<string, double>();
         /// <summary> STOP定義 </summary>
         public Dictionary<int, int> STOP { get; } = new Dictionary<int, int>();
+
+        /// <summary> 小節の短縮 (小節拡大率) </summary> <remarks> Key:小節番号 Value:拡大率 </remarks>
+        public Dictionary<int, double> BarMagnification { get; } = new Dictionary<int, double>();
 
         /// <summary> ノート </summary>
         public List<Note> Notes { get; } = new List<Note>();
@@ -72,6 +76,10 @@ namespace lscyane.BMS
             // --------------------------
             // 定義系出力
             // --------------------------
+            foreach (var kv in this.BarMagnification.OrderBy(k => k.Key))
+            {
+                sw.WriteLine($"#{kv.Key:D03}02: {kv.Value}");
+            }
             foreach (var kv in WAV.OrderBy(k => k.Key))
             {
                 var comment = string.IsNullOrEmpty(kv.Value.Comment) ? "" : $"\t;{kv.Value.Comment}";
@@ -97,7 +105,7 @@ namespace lscyane.BMS
             // --------------------------
             // ノート出力（小節・チャンネル・Denominatorごとにグループ化）
             // --------------------------
-            var notesByMeasureChannelDen = Notes
+            var notesByMeasureChannelDen = this.Notes
                 // 小節番号、チャンネル番号、Denominatorごとにグループ化
                 .GroupBy(n => new { n.Measure, n.Channel, n.Denominator })
                 // 小節番号→チャンネル番号→Denominatorの順でソート
@@ -270,6 +278,7 @@ namespace lscyane.BMS
             var header = line.Substring(1, 5); // "00111" 部分
             if (!int.TryParse(header.Substring(0, 3), out var measure)) return false;
 
+            // エラーチェック : チャンネル番号の確認
             var channel = header.Substring(3, 2);
             if (channel.Length != 2)
             {
@@ -279,6 +288,16 @@ namespace lscyane.BMS
             }
 
             var data = line[(1 + 5 + 1)..].Trim();  // ":"以降
+
+            // 特殊チャンネル [小節の短縮]
+            if (channel == "02")
+            {
+                double mag = double.Parse(data);
+                bms.BarMagnification.Add(measure, mag);
+                return true;
+            }
+         
+            // エラーチェック : 通常チャンネルのデータ部確認
             if (data.Length % 2 != 0)               // 2桁ごとに区切られる
             {
                 System.Diagnostics.Debug.WriteLine("[Warning] ノート定義データ部が偶数桁になっていない");
