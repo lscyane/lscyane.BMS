@@ -40,10 +40,5 @@ namespace lscyane.BMS
         /// 小節内の Tick 値（分数を自然数化）
         /// </summary>
         public double BeatPosition => (double)this.Numerator / this.Denominator;
-
-        /// <summary>
-        /// 時間軸上の絶対位置（小節番号＋小節内位置）
-        /// </summary>
-        public double AbsolutePosition => Measure + BeatPosition;
     }
 }
