@@ -22,17 +22,18 @@ namespace lscyane.BMS
 
 
         /// <summary>
-        /// BPMと拍位置からノートのタイミング[ms]を算出する
+        /// BPMと拍位置からノートのタイミング[sec]を算出する
         /// </summary>
         /// <param name="bpm"></param>
         /// <returns></returns>
         public double GetTime(double bpm)
         {
             if (bpm <= 0) return 0;
-            var beatDuration = 60000.0 / bpm;                                // 1拍の長さ[ms]
-            var positionInBeats = (double)this.Numerator / this.Denominator; // 拍位置(4分音符を1拍とする)
-            var timeInMs = beatDuration * positionInBeats;                   // ノートのタイミング[ms]
-            return timeInMs;
+            var beatDuration = 60000.0 / bpm;                                   // 1拍の長さ[ms]
+            var positionInBeats = (double)this.Numerator / this.Denominator;    // 拍位置(4分音符を1拍とする)
+            var notePosition = positionInBeats + (this.Measure * 4);            // ノートのタイミング[拍ベース]
+            var timeInMs = beatDuration * notePosition;                         // ノートのタイミング[ms]
+            return timeInMs / 1000.0;   // 秒に換算して返す
         }
 
 
@@ -40,5 +41,11 @@ namespace lscyane.BMS
         /// 小節内の Tick 値（分数を自然数化）
         /// </summary>
         public double BeatPosition => (double)this.Numerator / this.Denominator;
+
+
+        /// <summary>
+        /// ソート用にBPM変化を考慮しない大体の位置を返す
+        /// </summary>
+        public double AboutPosition => this.Measure + this.BeatPosition;
     }
 }
