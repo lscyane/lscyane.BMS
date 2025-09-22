@@ -31,8 +31,8 @@ namespace lscyane.BMS
             if (bpm <= 0) return 0;
             var beatDuration = 60000.0 / bpm;                                   // 1拍の長さ[ms]
             var positionInBeats = (double)this.Numerator / this.Denominator;    // 拍位置(4分音符を1拍とする)
-            var notePosition = positionInBeats + (this.Measure * 4);            // ノートのタイミング[拍ベース]
-            var timeInMs = beatDuration * notePosition;                         // ノートのタイミング[ms]
+            var notePosition = positionInBeats + this.Measure;                  // ノートのタイミング[拍ベース]
+            var timeInMs = beatDuration * notePosition * 4;                     // ノートのタイミング[ms]
             return timeInMs / 1000.0;   // 秒に換算して返す
         }
 
