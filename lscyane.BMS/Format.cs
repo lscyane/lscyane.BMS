@@ -205,10 +205,11 @@ namespace lscyane.BMS
             }
 
             // ヘッダ情報を設定
-            switch (key)
+            switch (key.ToUpper())
             {
                 case "#TITLE": bms.Header.TITLE = value; break;
                 case "#ARTIST": bms.Header.ARTIST = value; break;
+                case "#SUBARTIST": bms.Header.SUBARTIST = value; break;
                 case "#COMMENT": bms.Header.COMMENT = value; break;
                 case "#PANEL": bms.Header.PANEL = value; break;
                 case "#PREVIEW": bms.Header.PREVIEW = value; break;
@@ -225,6 +226,9 @@ namespace lscyane.BMS
                 case "#RANK": bms.Header.RANK = int.TryParse(value, out var rnk) ? rnk : 0; break;
                 case "#PLAYER": bms.Header.PLAYER = int.TryParse(value, out var ply) ? ply : 0; break;
                 case "#TOTAL": bms.Header.TOTAL = int.TryParse(value, out var tot) ? tot : 0; break;
+                case "#RANDOM": /* TODO */ break;
+                case "#IF": /* TODO */ break;
+                case "#ENDIF": /* TODO */ break;
                 default:    return false;   // 処理可能なヘッダではない
             }
 

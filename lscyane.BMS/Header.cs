@@ -12,6 +12,9 @@ namespace lscyane.BMS
         /// <summary> アーティスト名 </summary>
         public string ARTIST { get; set; } = string.Empty;
 
+        /// <summary> サブアーティスト名 </summary>
+        public string SUBARTIST { get; set; } = string.Empty;
+
         /// <summary> コメント </summary>
         public string COMMENT { get; set; } = string.Empty;
 
@@ -59,6 +62,9 @@ namespace lscyane.BMS
 
         /// <summary>  </summary>
         public int TOTAL { get; set; }
+
+        /// <summary> 乱数処理 </summary>
+        public int Random { get; set; }
 
     }
 }
