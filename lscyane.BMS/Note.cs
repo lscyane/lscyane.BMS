@@ -44,8 +44,8 @@ namespace lscyane.BMS
 
 
         /// <summary>
-        /// ソート用にBPM変化を考慮しない大体の位置を返す
+        /// BPM変化や小節拡大を考慮しない論理的な小節位置を返す
         /// </summary>
-        public double AboutPosition => this.Measure + this.BeatPosition;
+        public double MeasurePosition => this.Measure + this.BeatPosition;
     }
 }
