@@ -5,7 +5,12 @@ namespace lscyane.BMS
 {
     public class Note
     {
-        /// <summary> チャンネル番号 </summary>
+        /// <summary>
+        /// チャンネル番号
+        /// </summary>
+        /// <remarks>
+        /// BMSのBGMなど、同じチャンネルを複数定義する場合があるので、それを管理するための値
+        /// </remarks>
         public string Channel { get; set; } = "00";
 
         /// <summary> 小節番号 </summary>

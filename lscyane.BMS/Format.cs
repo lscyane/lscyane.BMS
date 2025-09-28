@@ -30,6 +30,12 @@ namespace lscyane.BMS
         public List<Note> Notes { get; } = new List<Note>();
 
 
+        #region テンポラリ変数
+        int beforeMeasure = -1;
+        int subChNum = 0;
+        #endregion
+
+
         /// <summary>
         /// BMSファイルを書き出す
         /// </summary>
@@ -309,6 +315,20 @@ namespace lscyane.BMS
                 return false;
             }
 
+            // BGMチャンネルの時、サブ(重複)チャンネル処理
+            if (channel == "01")
+            {
+                if (bms.beforeMeasure != measure)
+                {
+                    bms.beforeMeasure = measure;
+                    bms.subChNum = 0;
+                }
+                else
+                {
+                    bms.subChNum++;
+                }
+            }
+
             var denominator = data.Length / 2;
             for (int i = 0; i < denominator; i++)
             {
@@ -319,7 +339,7 @@ namespace lscyane.BMS
 
                 bms.Notes.Add(new Note
                 {
-                    Channel = channel,
+                    Channel = channel + ((channel == "01") && (bms.subChNum != 0) ? bms.subChNum.ToString("X02") : string.Empty),
                     Measure = measure,
                     Value = value,
                     Numerator = i,
