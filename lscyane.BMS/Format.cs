@@ -16,6 +16,10 @@ namespace lscyane.BMS
 
         /// <summary> WAV定義 </summary>
         public Dictionary<string, Table> WAV { get; } = new Dictionary<string, Table>();
+        /// <summary> WAV定義 - VOLUME </summary>
+        public Dictionary<string, Table> VOLUME { get; } = new Dictionary<string, Table>();
+        /// <summary> WAV定義 - PAN </summary>
+        public Dictionary<string, Table> PAN { get; } = new Dictionary<string, Table>();
         /// <summary> BMP定義 </summary>
         public Dictionary<string, Table> BMP { get; } = new Dictionary<string, Table>();
         /// <summary> BPM定義 </summary>
@@ -262,6 +266,18 @@ namespace lscyane.BMS
             {
                 var idStr = key.Substring(4,2); // "01" 部分
                 bms.WAV[idStr] = new Table(value);
+                return true;
+            }
+            else if (key.StartsWith("#VOLUME"))
+            {
+                var idStr = key.Substring(7, 2); // "01" 部分
+                bms.VOLUME[idStr] = new Table(value);
+                return true;
+            }
+            else if (key.StartsWith("#PAN"))
+            {
+                var idStr = key.Substring(4, 2); // "01" 部分
+                bms.PAN[idStr] = new Table(value);
                 return true;
             }
             else if (key.StartsWith("#BMP"))
