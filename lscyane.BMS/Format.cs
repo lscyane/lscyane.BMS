@@ -22,6 +22,8 @@ namespace lscyane.BMS
         public Dictionary<string, Table> PAN { get; } = new Dictionary<string, Table>();
         /// <summary> BMP定義 </summary>
         public Dictionary<string, Table> BMP { get; } = new Dictionary<string, Table>();
+        /// <summary> AVI定義 </summary>
+        public Dictionary<string, Table> AVI { get; } = new Dictionary<string, Table>();
         /// <summary> BPM定義 </summary>
         public Dictionary<string, double> BPMDefs { get; } = new Dictionary<string, double>();
         /// <summary> STOP定義 </summary>
@@ -100,6 +102,12 @@ namespace lscyane.BMS
             {
                 var comment = string.IsNullOrEmpty(kv.Value.Comment) ? "" : $"\t;{kv.Value.Comment}";
                 sw.WriteLine($"#BMP{kv.Key, 2}: {kv.Value}");
+            }
+            sw.WriteLine("");
+            foreach (var kv in AVI.OrderBy(k => k.Key))
+            {
+                var comment = string.IsNullOrEmpty(kv.Value.Comment) ? "" : $"\t;{kv.Value.Comment}";
+                sw.WriteLine($"#AVI{kv.Key, 2}: {kv.Value}");
             }
             sw.WriteLine("");
             foreach (var kv in BPMDefs.OrderBy(k => k.Key))
@@ -284,6 +292,12 @@ namespace lscyane.BMS
             {
                 var idStr = key.Substring(4,2); // "01" 部分
                 bms.BMP[idStr] = new Table(value);
+                return true;
+            }
+            else if (key.StartsWith("#AVI"))
+            {
+                var idStr = key.Substring(4, 2); // "01" 部分
+                bms.AVI[idStr] = new Table(value);
                 return true;
             }
             else if (key.StartsWith("#BPM"))
