@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Xml.Linq;
 
 namespace lscyane.BMS
 {
@@ -34,6 +33,9 @@ namespace lscyane.BMS
 
         /// <summary> ノート </summary>
         public List<Note> Notes { get; } = new List<Note>();
+
+        /// <summary> フリーテキスト </summary>
+        public string FreeText = string.Empty;
 
 
         #region テンポラリ変数
@@ -83,6 +85,12 @@ namespace lscyane.BMS
             WriteHeader("#RANK", Header.RANK);
             WriteHeader("#PLAYER", Header.PLAYER);
             WriteHeader("#TOTAL", Header.TOTAL);
+            sw.WriteLine("");
+
+            // --------------------------
+            // FreeText 出力
+            // --------------------------
+            sw.WriteLine(this.FreeText);
             sw.WriteLine("");
 
             // --------------------------
@@ -190,8 +198,9 @@ namespace lscyane.BMS
                     continue;
 
                 // ここまで来たら不明な行
-                System.Diagnostics.Debug.WriteLine("[Warning] 不明な行をスキップしました");
+                System.Diagnostics.Debug.WriteLine("[Warning] 不明な行をFreeテキストとして処理します");
                 System.Diagnostics.Debug.WriteLine("       -> " + line);
+                bms.FreeText += line + Environment.NewLine;
             }
 
             return bms;
@@ -240,6 +249,7 @@ namespace lscyane.BMS
                 case "#RANK": bms.Header.RANK = int.TryParse(value, out var rnk) ? rnk : 0; break;
                 case "#PLAYER": bms.Header.PLAYER = int.TryParse(value, out var ply) ? ply : 0; break;
                 case "#TOTAL": bms.Header.TOTAL = int.TryParse(value, out var tot) ? tot : 0; break;
+
                 case "#RANDOM": /* TODO */ break;
                 case "#IF": /* TODO */ break;
                 case "#ENDIF": /* TODO */ break;
@@ -318,6 +328,11 @@ namespace lscyane.BMS
         /// <returns>true:ノート系  false:ノート系ではなかった</returns>
         static bool ParseNotes(Format bms, string line)
         {
+            if (line.Length < 7)
+            {
+                return false;   // ↓のSubstring処理の例外対策。この文字数の時点でノート系ではないので除外
+            }
+
             // ノート系 (#<小節番号><チャンネル>:<データ列>)
             var header = line.Substring(1, 5); // "00111" 部分
             if (!int.TryParse(header.Substring(0, 3), out var measure)) return false;
