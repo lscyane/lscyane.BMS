@@ -48,7 +48,7 @@ namespace lscyane.BMS
         /// <summary> ベース難易度 </summary>
         public string BLEVEL { get; set; } = string.Empty;
 
-        /// <summary>  </summary>
+        /// <summary> ジャンル </summary>
         public string GENRE { get; set; } = string.Empty;
 
         /// <summary>  </summary>

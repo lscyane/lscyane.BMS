@@ -192,23 +192,19 @@ namespace lscyane.BMS
         /// <returns>true:ヘッダ  false:ヘッダではなかった</returns>
         static bool ParseHeader(Format bms, string line)
         {
-            string key, value;
+            string[] parts;
             if (line.Contains(":"))
             {
                 // コロン区切り (#TITLE:曲名)
-                var parts = line.Split(':', 2, StringSplitOptions.RemoveEmptyEntries);
-                if (parts.Length < 2) return false;
-                key = parts[0].Trim().ToUpperInvariant();
-                value = parts[1].Trim();
+                parts = line.Split(':', 2, StringSplitOptions.RemoveEmptyEntries);
             }
             else
             {
                 // スペース区切り (#TITLE 曲名)
-                var parts = line.Split(' ', 2, StringSplitOptions.RemoveEmptyEntries);
-                if (parts.Length < 2) return false;
-                key = parts[0].Trim().ToUpperInvariant();
-                value = parts[1].Trim();
+                parts = line.Split(' ', 2, StringSplitOptions.RemoveEmptyEntries);
             }
+            string key = parts[0].Trim().ToUpperInvariant();
+            string value = (2 <= parts.Length) ? parts[1].Trim() : string.Empty;
 
             // ヘッダ情報を設定
             switch (key.ToUpper())
