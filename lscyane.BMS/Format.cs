@@ -235,6 +235,14 @@ namespace lscyane.BMS
                 case "#RANDOM": /* TODO */ break;
                 case "#IF": /* TODO */ break;
                 case "#ENDIF": /* TODO */ break;
+
+                // 対応予定なし
+                case "#BGMWAV":
+                    // 古くからのBMSプレイヤーは全て対応しているが、最近の「キー音必須」文化ではほぼ使われない。
+                    // キー音文化が根付く前のBMSに多用されたが、今は非推奨気味
+                    // 曲開始時に自動再生・常にループ・停止は不可
+                    System.Diagnostics.Debug.WriteLine($"非対応のBMSヘッダ : {key} - {value}");
+                    break;
                 default:    return false;   // 処理可能なヘッダではない
             }
 
