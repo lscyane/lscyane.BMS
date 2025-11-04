@@ -92,8 +92,26 @@ namespace lscyane.BMS
             // --------------------------
             foreach (var kv in WAV.OrderBy(k => k.Key))
             {
-                var comment = string.IsNullOrEmpty(kv.Value.Comment) ? "" : $"\t;{kv.Value.Comment}";
-                sw.WriteLine($"#WAV{kv.Key}: {kv.Value.Data}{comment}");
+                // WAV データがある時
+                if (string.IsNullOrEmpty(kv.Value.Data) == false)
+                {
+                    var comment = string.IsNullOrEmpty(kv.Value.Comment) ? "" : $"\t;{kv.Value.Comment}";
+                    sw.WriteLine($"#WAV{kv.Key}: {kv.Value.Data}{comment}");
+                    // VOLUME が設定されているとき
+                    if ((this.VOLUME.TryGetValue(kv.Key, out Table vol))
+                     && (string.IsNullOrEmpty(vol.Data) == false)
+                    ) {
+                        comment = string.IsNullOrEmpty(vol.Comment) ? "" : $"\t;{vol.Comment}";
+                        sw.WriteLine($"#VOLUME{kv.Key}: {vol.Data}{comment}");
+                    }
+                    // PAN が設定されているとき
+                    if ((this.PAN.TryGetValue(kv.Key, out Table pan))
+                     && (string.IsNullOrEmpty(pan.Data) == false)
+                    ) {
+                        comment = string.IsNullOrEmpty(pan.Comment) ? "" : $"\t;{pan.Comment}";
+                        sw.WriteLine($"#PAN{kv.Key}: {pan.Data}{comment}");
+                    }
+                }
             }
             sw.WriteLine("");
             foreach (var kv in BMP.OrderBy(k => k.Key))
