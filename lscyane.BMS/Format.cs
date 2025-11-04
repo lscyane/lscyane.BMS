@@ -88,18 +88,8 @@ namespace lscyane.BMS
             sw.WriteLine("");
 
             // --------------------------
-            // FreeText 出力
-            // --------------------------
-            sw.WriteLine(this.FreeText);
-            sw.WriteLine("");
-
-            // --------------------------
             // 定義系出力
             // --------------------------
-            foreach (var kv in this.BarMagnification.OrderBy(k => k.Key))
-            {
-                sw.WriteLine($"#{kv.Key:D03}02: {kv.Value}");
-            }
             foreach (var kv in WAV.OrderBy(k => k.Key))
             {
                 var comment = string.IsNullOrEmpty(kv.Value.Comment) ? "" : $"\t;{kv.Value.Comment}";
@@ -109,13 +99,18 @@ namespace lscyane.BMS
             foreach (var kv in BMP.OrderBy(k => k.Key))
             {
                 var comment = string.IsNullOrEmpty(kv.Value.Comment) ? "" : $"\t;{kv.Value.Comment}";
-                sw.WriteLine($"#BMP{kv.Key, 2}: {kv.Value}");
+                sw.WriteLine($"#BMP{kv.Key, 2}: {kv.Value.Data}");
             }
             sw.WriteLine("");
             foreach (var kv in AVI.OrderBy(k => k.Key))
             {
                 var comment = string.IsNullOrEmpty(kv.Value.Comment) ? "" : $"\t;{kv.Value.Comment}";
-                sw.WriteLine($"#AVI{kv.Key, 2}: {kv.Value}");
+                sw.WriteLine($"#AVI{kv.Key, 2}: {kv.Value.Data}");
+            }
+            sw.WriteLine("");
+            foreach (var kv in this.BarMagnification.OrderBy(k => k.Key))
+            {
+                sw.WriteLine($"#{kv.Key:D03}02: {kv.Value}");
             }
             sw.WriteLine("");
             foreach (var kv in BPMDefs.OrderBy(k => k.Key))
@@ -160,8 +155,18 @@ namespace lscyane.BMS
 
                 // 出力例: #0010A:00001700...
                 // 小節番号3桁＋チャンネル2桁（36進数）＋:＋データ列
-                sw.WriteLine($"#{measure:000}{channel}:{new string(data)}");
+                sw.WriteLine($"#{measure:000}{channel}: {new string(data)}");
             }
+            sw.WriteLine("");
+
+            // --------------------------
+            // FreeText 出力
+            // --------------------------
+            sw.WriteLine("");
+            sw.WriteLine(this.FreeText);
+            sw.WriteLine("");
+
+            sw.Flush();
         }
 
 
