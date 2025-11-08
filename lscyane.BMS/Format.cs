@@ -48,7 +48,7 @@ namespace lscyane.BMS
         /// BMSファイルを書き出す
         /// </summary>
         /// <param name="path"></param>
-        public void Save(string path, Encoding? enc = null)
+        public void Save(string path, string[]? supportedHeaders, Encoding? enc = null)
         {
             Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
             if (enc == null)
@@ -64,6 +64,7 @@ namespace lscyane.BMS
             void WriteHeader(string key, object value)
             {
                 if (value == null) return;
+                if ((supportedHeaders != null) && (supportedHeaders.Any(x => x == key) == false)) return;
                 sw.WriteLine($"{key}: {value}");
             }
             WriteHeader("#TITLE", Header.TITLE);
