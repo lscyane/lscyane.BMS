@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 
 namespace lscyane.BMS
 {
@@ -157,6 +158,11 @@ namespace lscyane.BMS
             {
                 int measure = group.Key.Measure;            // 小節番号
                 var channel = group.Key.Channel;            // チャンネル番号
+                if (channel.Length > 2)
+                {
+                    // サブチャンネル形式にしていたのを戻す
+                    channel = channel.Substring(0, 2);
+                }
                 int denominator = group.Key.Denominator;    // 分母（小節内の分割数）
 
                 // 小節・チャンネル・Denominatorごとのノート一覧をNumerator順に並べ替え
