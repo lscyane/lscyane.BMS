@@ -237,58 +237,51 @@ namespace lscyane.BMS
         /// <returns>true:ヘッダ  false:ヘッダではなかった</returns>
         static bool ParseHeader(Format bms, string line)
         {
-            string[] parts;
-            if (line.Contains(":"))
+            var match = Regex.Match(line, @"^(#[A-Z]+)\s*:?(.+)$", RegexOptions.IgnoreCase);
+            if (match.Success)
             {
-                // コロン区切り (#TITLE:曲名)
-                parts = line.Split(':', 2, StringSplitOptions.RemoveEmptyEntries);
+                string key = match.Groups[1].Value.ToUpperInvariant();
+                string value = match.Groups[2].Value.Trim();
+
+                // ヘッダ情報を設定
+                switch (key.ToUpper())
+                {
+                    case "#TITLE": bms.Header.TITLE = value; break;
+                    case "#ARTIST": bms.Header.ARTIST = value; break;
+                    case "#SUBARTIST": bms.Header.SUBARTIST = value; break;
+                    case "#COMMENT": bms.Header.COMMENT = value; break;
+                    case "#PANEL": bms.Header.PANEL = value; break;
+                    case "#PREVIEW": bms.Header.PREVIEW = value; break;
+                    case "#PREIMAGE": bms.Header.PREIMAGE = value; break;
+                    case "#STAGEFILE": bms.Header.STAGEFILE = value; break;
+                    case "#BACKGROUND": bms.Header.BACKGROUND = value; break;
+                    case "#RESULTIMAGE": bms.Header.RESULTIMAGE = value; break;
+                    case "#BPM": bms.Header.BPM = decimal.TryParse(value, out var bpm) ? bpm : 0; break;
+                    case "#DLEVEL": bms.Header.DLEVEL = value; break;
+                    case "#GLEVEL": bms.Header.GLEVEL = value; break;
+                    case "#BLEVEL": bms.Header.BLEVEL = value; break;
+                    case "#GENRE": bms.Header.GENRE = value; break;
+                    case "#PLAYLEVEL": bms.Header.PLAYLEVEL = int.TryParse(value, out var plv) ? plv : 0; break;
+                    case "#RANK": bms.Header.RANK = int.TryParse(value, out var rnk) ? rnk : 0; break;
+                    case "#PLAYER": bms.Header.PLAYER = int.TryParse(value, out var ply) ? ply : 0; break;
+                    case "#TOTAL": bms.Header.TOTAL = int.TryParse(value, out var tot) ? tot : 0; break;
+
+                    case "#RANDOM": /* TODO */ break;
+                    case "#IF": /* TODO */ break;
+                    case "#ENDIF": /* TODO */ break;
+
+                    // 対応予定なし
+                    case "#BGMWAV":
+                        // 古くからのBMSプレイヤーは全て対応しているが、最近の「キー音必須」文化ではほぼ使われない。
+                        // キー音文化が根付く前のBMSに多用されたが、今は非推奨気味
+                        // 曲開始時に自動再生・常にループ・停止は不可
+                        System.Diagnostics.Debug.WriteLine($"非対応のBMSヘッダ : {key} - {value}");
+                        break;
+                    default: return false;   // 処理可能なヘッダではない
+                }
+                return true;
             }
-            else
-            {
-                // スペース区切り (#TITLE 曲名)
-                parts = line.Split(' ', 2, StringSplitOptions.RemoveEmptyEntries);
-            }
-            string key = parts[0].Trim().ToUpperInvariant();
-            string value = (2 <= parts.Length) ? parts[1].Trim() : string.Empty;
-
-            // ヘッダ情報を設定
-            switch (key.ToUpper())
-            {
-                case "#TITLE": bms.Header.TITLE = value; break;
-                case "#ARTIST": bms.Header.ARTIST = value; break;
-                case "#SUBARTIST": bms.Header.SUBARTIST = value; break;
-                case "#COMMENT": bms.Header.COMMENT = value; break;
-                case "#PANEL": bms.Header.PANEL = value; break;
-                case "#PREVIEW": bms.Header.PREVIEW = value; break;
-                case "#PREIMAGE": bms.Header.PREIMAGE = value; break;
-                case "#STAGEFILE": bms.Header.STAGEFILE = value; break;
-                case "#BACKGROUND": bms.Header.BACKGROUND = value; break;
-                case "#RESULTIMAGE": bms.Header.RESULTIMAGE = value; break;
-                case "#BPM": bms.Header.BPM = decimal.TryParse(value, out var bpm) ? bpm : 0; break;
-                case "#DLEVEL": bms.Header.DLEVEL = value; break;
-                case "#GLEVEL": bms.Header.GLEVEL = value; break;
-                case "#BLEVEL": bms.Header.BLEVEL = value; break;
-                case "#GENRE": bms.Header.GENRE = value; break;
-                case "#PLAYLEVEL": bms.Header.PLAYLEVEL = int.TryParse(value, out var plv) ? plv : 0; break;
-                case "#RANK": bms.Header.RANK = int.TryParse(value, out var rnk) ? rnk : 0; break;
-                case "#PLAYER": bms.Header.PLAYER = int.TryParse(value, out var ply) ? ply : 0; break;
-                case "#TOTAL": bms.Header.TOTAL = int.TryParse(value, out var tot) ? tot : 0; break;
-
-                case "#RANDOM": /* TODO */ break;
-                case "#IF": /* TODO */ break;
-                case "#ENDIF": /* TODO */ break;
-
-                // 対応予定なし
-                case "#BGMWAV":
-                    // 古くからのBMSプレイヤーは全て対応しているが、最近の「キー音必須」文化ではほぼ使われない。
-                    // キー音文化が根付く前のBMSに多用されたが、今は非推奨気味
-                    // 曲開始時に自動再生・常にループ・停止は不可
-                    System.Diagnostics.Debug.WriteLine($"非対応のBMSヘッダ : {key} - {value}");
-                    break;
-                default:    return false;   // 処理可能なヘッダではない
-            }
-
-            return true;
+            return false;
         }
 
 
@@ -412,6 +405,7 @@ namespace lscyane.BMS
 
                 bms.Notes.Add(new Note
                 {
+                    // BGMチャンネルが複数あった場合は、サブチャンネルとして追加する
                     Channel = channel + ((channel == "01") && (bms.subChNum != 0) ? bms.subChNum.ToString("X02") : string.Empty),
                     Measure = measure,
                     Value = value,
