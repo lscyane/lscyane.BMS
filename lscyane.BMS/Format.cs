@@ -49,7 +49,7 @@ namespace lscyane.BMS
         /// BMSファイルを書き出す
         /// </summary>
         /// <param name="path"></param>
-        public void Save(string path, string[]? supportedHeaders, Encoding? enc = null)
+        public void Save(string path, string[] supportedHeaders, Encoding? enc = null)
         {
             Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
             if (enc == null)
@@ -65,7 +65,7 @@ namespace lscyane.BMS
             void WriteHeader(string key, object value)
             {
                 if (value == null) return;
-                if ((supportedHeaders != null) && (supportedHeaders.Any(x => x == key) == false)) return;
+                if ((supportedHeaders.Length != 0) && (supportedHeaders.Any(x => x == key) == false)) return;
                 sw.WriteLine($"{key}: {value}");
             }
             WriteHeader("#TITLE", Header.TITLE);
@@ -87,6 +87,7 @@ namespace lscyane.BMS
             WriteHeader("#RANK", Header.RANK);
             WriteHeader("#PLAYER", Header.PLAYER);
             WriteHeader("#TOTAL", Header.TOTAL);
+            WriteHeader("#LNOBJ", Header.LNOBJ);
             sw.WriteLine("");
 
             // --------------------------
@@ -243,7 +244,7 @@ namespace lscyane.BMS
         /// <returns>true:ヘッダ  false:ヘッダではなかった</returns>
         static bool ParseHeader(Format bms, string line)
         {
-            var match = Regex.Match(line, @"^(#[A-Z]+)\s*:?(.+)$", RegexOptions.IgnoreCase);
+            var match = Regex.Match(line, @"^(#[A-Za-z0-9_]+)\s*[:\s]?(.*)$");
             if (match.Success)
             {
                 string key = match.Groups[1].Value.ToUpperInvariant();
@@ -252,25 +253,26 @@ namespace lscyane.BMS
                 // ヘッダ情報を設定
                 switch (key.ToUpper())
                 {
-                    case "#TITLE": bms.Header.TITLE = value; break;
-                    case "#ARTIST": bms.Header.ARTIST = value; break;
-                    case "#SUBARTIST": bms.Header.SUBARTIST = value; break;
-                    case "#COMMENT": bms.Header.COMMENT = value; break;
-                    case "#PANEL": bms.Header.PANEL = value; break;
-                    case "#PREVIEW": bms.Header.PREVIEW = value; break;
-                    case "#PREIMAGE": bms.Header.PREIMAGE = value; break;
-                    case "#STAGEFILE": bms.Header.STAGEFILE = value; break;
+                    case "#TITLE":      bms.Header.TITLE = value; break;
+                    case "#ARTIST":     bms.Header.ARTIST = value; break;
+                    case "#SUBARTIST":  bms.Header.SUBARTIST = value; break;
+                    case "#COMMENT":    bms.Header.COMMENT = value; break;
+                    case "#PANEL":      bms.Header.PANEL = value; break;
+                    case "#PREVIEW":    bms.Header.PREVIEW = value; break;
+                    case "#PREIMAGE":   bms.Header.PREIMAGE = value; break;
+                    case "#STAGEFILE":  bms.Header.STAGEFILE = value; break;
                     case "#BACKGROUND": bms.Header.BACKGROUND = value; break;
-                    case "#RESULTIMAGE": bms.Header.RESULTIMAGE = value; break;
-                    case "#BPM": bms.Header.BPM = decimal.TryParse(value, out var bpm) ? bpm : 0; break;
-                    case "#DLEVEL": bms.Header.DLEVEL = value; break;
-                    case "#GLEVEL": bms.Header.GLEVEL = value; break;
-                    case "#BLEVEL": bms.Header.BLEVEL = value; break;
-                    case "#GENRE": bms.Header.GENRE = value; break;
-                    case "#PLAYLEVEL": bms.Header.PLAYLEVEL = int.TryParse(value, out var plv) ? plv : 0; break;
-                    case "#RANK": bms.Header.RANK = int.TryParse(value, out var rnk) ? rnk : 0; break;
-                    case "#PLAYER": bms.Header.PLAYER = int.TryParse(value, out var ply) ? ply : 0; break;
-                    case "#TOTAL": bms.Header.TOTAL = int.TryParse(value, out var tot) ? tot : 0; break;
+                    case "#RESULTIMAGE":bms.Header.RESULTIMAGE = value; break;
+                    case "#BPM":        bms.Header.BPM = decimal.TryParse(value, out var bpm) ? bpm : 0; break;
+                    case "#DLEVEL":     bms.Header.DLEVEL = value; break;
+                    case "#GLEVEL":     bms.Header.GLEVEL = value; break;
+                    case "#BLEVEL":     bms.Header.BLEVEL = value; break;
+                    case "#GENRE":      bms.Header.GENRE = value; break;
+                    case "#PLAYLEVEL":  bms.Header.PLAYLEVEL = int.TryParse(value, out var plv) ? plv : 0; break;
+                    case "#RANK":       bms.Header.RANK = int.TryParse(value, out var rnk) ? rnk : 0; break;
+                    case "#PLAYER":     bms.Header.PLAYER = int.TryParse(value, out var ply) ? ply : 0; break;
+                    case "#TOTAL":      bms.Header.TOTAL = int.TryParse(value, out var tot) ? tot : 0; break;
+                    case "#LNOBJ":      bms.Header.LNOBJ = value; break;
 
                     case "#RANDOM": /* TODO */ break;
                     case "#IF": /* TODO */ break;

@@ -63,6 +63,9 @@ namespace lscyane.BMS
         /// <summary>  </summary>
         public int TOTAL { get; set; }
 
+        /// <summary> ロングノート終端定義 </summary>
+        public string LNOBJ { get; set; } = string.Empty;
+
         /// <summary> 乱数処理 </summary>
         public int Random { get; set; }
 
