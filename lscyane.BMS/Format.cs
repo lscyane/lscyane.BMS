@@ -256,6 +256,7 @@ namespace lscyane.BMS
                     case "#TITLE":      bms.Header.TITLE = value; break;
                     case "#ARTIST":     bms.Header.ARTIST = value; break;
                     case "#SUBARTIST":  bms.Header.SUBARTIST = value; break;
+                    case "#GENRE":      bms.Header.GENRE = value; break;
                     case "#COMMENT":    bms.Header.COMMENT = value; break;
                     case "#PANEL":      bms.Header.PANEL = value; break;
                     case "#PREVIEW":    bms.Header.PREVIEW = value; break;
@@ -267,7 +268,6 @@ namespace lscyane.BMS
                     case "#DLEVEL":     bms.Header.DLEVEL = value; break;
                     case "#GLEVEL":     bms.Header.GLEVEL = value; break;
                     case "#BLEVEL":     bms.Header.BLEVEL = value; break;
-                    case "#GENRE":      bms.Header.GENRE = value; break;
                     case "#PLAYLEVEL":  bms.Header.PLAYLEVEL = int.TryParse(value, out var plv) ? plv : 0; break;
                     case "#RANK":       bms.Header.RANK = int.TryParse(value, out var rnk) ? rnk : 0; break;
                     case "#PLAYER":     bms.Header.PLAYER = int.TryParse(value, out var ply) ? ply : 0; break;
