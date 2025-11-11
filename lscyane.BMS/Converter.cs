@@ -7,6 +7,29 @@ namespace lscyane.BMS
     public static class Converter
     {
         /// <summary>
+        /// 汎用 数値から文字列への変換
+        /// </summary>
+        /// <param name="value"></param>
+        /// <param name="baseNum"></param>
+        /// <param name="digit"></param>
+        /// <returns></returns>
+        /// <exception cref="ArgumentOutOfRangeException"></exception>
+        public static string IntToString(int value, int baseNum, int digit = 0)
+        {
+            var retval = baseNum switch
+            {
+                10 => value.ToString(),
+                16 => value.ToString("X"),
+                36 => IntToBase36(value, digit),
+                _ => throw new ArgumentOutOfRangeException()
+            };
+            retval = retval.PadLeft(digit, '0');
+
+            return retval;
+        }
+
+
+        /// <summary>
         /// 36進数パーサー
         /// </summary>
         public static int ParseBase36(string s)
