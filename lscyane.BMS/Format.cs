@@ -27,7 +27,7 @@ namespace lscyane.BMS
         /// <summary> BPM定義 </summary>
         public Dictionary<string, double> BPMDefs { get; } = new Dictionary<string, double>();
         /// <summary> STOP定義 </summary>
-        public Dictionary<int, int> STOP { get; } = new Dictionary<int, int>();
+        public Dictionary<string, double> STOP { get; } = new Dictionary<string, double>();
 
         /// <summary> 小節の短縮 (小節拡大率) </summary> <remarks> Key:小節番号 Value:拡大率 </remarks>
         public Dictionary<int, double> BarMagnification { get; } = new Dictionary<int, double>();
@@ -141,7 +141,7 @@ namespace lscyane.BMS
             sw.WriteLine("");
             foreach (var kv in STOP.OrderBy(k => k.Key))
             {
-                sw.WriteLine($"#STOP{Converter.IntToBase36(kv.Key, 2)}: {kv.Value}");
+                sw.WriteLine($"#STOP{kv.Key,2}: {kv.Value}");
             }
 
             // --------------------------
@@ -341,6 +341,14 @@ namespace lscyane.BMS
                 if (!double.TryParse(value, out var bpmValue))
                     return false;
                 bms.BPMDefs[idStr] = bpmValue;
+                return true;
+            }
+            else if (key.StartsWith("#STOP"))
+            {
+                var idStr = key.Substring(5, 2); // "01" 部分
+                if (!double.TryParse(value, out var stpValue))
+                    return false;
+                bms.STOP[idStr] = stpValue;
                 return true;
             }
             return false; // 処理可能な定義ではない
