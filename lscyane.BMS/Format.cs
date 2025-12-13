@@ -64,9 +64,13 @@ namespace lscyane.BMS
             // --------------------------
             void WriteHeader(string key, object value)
             {
+                // 値がnullのものは出力しない
                 if (value == null) return;
+                // サポートしていないものは出力しない
                 if ((supportedHeaders.Length != 0) && (supportedHeaders.Any(x => x == key) == false)) return;
-                sw.WriteLine($"{key}: {value}");
+                // 出力
+                var split_h = " ";  // TODO: ヘッダ類の分割記号をスペースにするかコロンにするかオプションで設定する
+                sw.WriteLine($"{key}{split_h}{value}");
             }
             WriteHeader("#TITLE", Header.TITLE);
             WriteHeader("#ARTIST", Header.ARTIST);
@@ -93,55 +97,69 @@ namespace lscyane.BMS
             // --------------------------
             // 定義系出力
             // --------------------------
+            var split_d = " ";  // TODO: 定義系の分割記号をスペースにするかコロンにするかオプションで設定する
             foreach (var kv in WAV.OrderBy(k => k.Key))
             {
                 // WAV データがある時
                 if (string.IsNullOrEmpty(kv.Value.Data) == false)
                 {
                     var comment = string.IsNullOrEmpty(kv.Value.Comment) ? "" : $"\t;{kv.Value.Comment}";
-                    sw.WriteLine($"#WAV{kv.Key}: {kv.Value.Data}{comment}");
+                    sw.WriteLine($"#WAV{kv.Key}{split_d}{kv.Value.Data}{comment}");
                     // VOLUME が設定されているとき
                     if ((this.VOLUME.TryGetValue(kv.Key, out Table vol))
                      && (string.IsNullOrEmpty(vol.Data) == false)
                     ) {
                         comment = string.IsNullOrEmpty(vol.Comment) ? "" : $"\t;{vol.Comment}";
-                        sw.WriteLine($"#VOLUME{kv.Key}: {vol.Data}{comment}");
+                        sw.WriteLine($"#VOLUME{kv.Key}{split_d}{vol.Data}{comment}");
                     }
                     // PAN が設定されているとき
                     if ((this.PAN.TryGetValue(kv.Key, out Table pan))
                      && (string.IsNullOrEmpty(pan.Data) == false)
                     ) {
                         comment = string.IsNullOrEmpty(pan.Comment) ? "" : $"\t;{pan.Comment}";
-                        sw.WriteLine($"#PAN{kv.Key}: {pan.Data}{comment}");
+                        sw.WriteLine($"#PAN{kv.Key}{split_d}{pan.Data}{comment}");
                     }
                 }
             }
             sw.WriteLine("");
             foreach (var kv in BMP.OrderBy(k => k.Key))
             {
-                var comment = string.IsNullOrEmpty(kv.Value.Comment) ? "" : $"\t;{kv.Value.Comment}";
-                sw.WriteLine($"#BMP{kv.Key, 2}: {kv.Value.Data}");
+                if (string.IsNullOrEmpty(kv.Value.Data) == false)
+                {
+                    var comment = string.IsNullOrEmpty(kv.Value.Comment) ? "" : $"\t;{kv.Value.Comment}";
+                    sw.WriteLine($"#BMP{kv.Key,2}{split_d}{kv.Value.Data}");
+                }
             }
             sw.WriteLine("");
             foreach (var kv in AVI.OrderBy(k => k.Key))
             {
-                var comment = string.IsNullOrEmpty(kv.Value.Comment) ? "" : $"\t;{kv.Value.Comment}";
-                sw.WriteLine($"#AVI{kv.Key, 2}: {kv.Value.Data}");
-            }
-            sw.WriteLine("");
-            foreach (var kv in this.BarMagnification.OrderBy(k => k.Key))
-            {
-                sw.WriteLine($"#{kv.Key:D03}02: {kv.Value}");
+                if (string.IsNullOrEmpty(kv.Value.Data) == false)
+                {
+                    var comment = string.IsNullOrEmpty(kv.Value.Comment) ? "" : $"\t;{kv.Value.Comment}";
+                    sw.WriteLine($"#AVI{kv.Key,2}{split_d}{kv.Value.Data}");
+                }
             }
             sw.WriteLine("");
             foreach (var kv in BPMDefs.OrderBy(k => k.Key))
             {
-                sw.WriteLine($"#BPM{kv.Key, 2}: {kv.Value}");
+                if (double.IsNaN(kv.Value) == false)
+                {
+                    sw.WriteLine($"#BPM{kv.Key,2}{split_d}{kv.Value}");
+                }
             }
             sw.WriteLine("");
             foreach (var kv in STOP.OrderBy(k => k.Key))
             {
-                sw.WriteLine($"#STOP{kv.Key,2}: {kv.Value}");
+                if (double.IsNaN(kv.Value) == false)
+                {
+                    sw.WriteLine($"#STOP{kv.Key,2}{split_d}{kv.Value}");
+                }
+            }
+
+            sw.WriteLine("");
+            foreach (var kv in this.BarMagnification.OrderBy(k => k.Key))
+            {
+                sw.WriteLine($"#{kv.Key:D03}02:{kv.Value}");
             }
 
             // --------------------------
@@ -155,6 +173,9 @@ namespace lscyane.BMS
                 .ThenBy(g => g.Key.Channel)
                 .ThenBy(g => g.Key.Denominator);
 
+            int current_measure = 0;
+            string last_ch = "00";
+            int last_subch = -1;
             foreach (var group in notesByMeasureChannelDen)
             {
                 int measure = group.Key.Measure;            // 小節番号
@@ -179,9 +200,46 @@ namespace lscyane.BMS
                     data[note.Numerator * 2 + 1] = note.Value[1];
                 }
 
+                // TODO: 小節番号毎に改行を入れるオプション
+                {
+                    // 小節番号変化を検知
+                    if (current_measure != measure)
+                    {
+                        last_subch = -1;
+                        current_measure = measure;
+                        sw.WriteLine("");
+                    }
+                }
+
+                // サブチャンネル定義だったとき
+                if (group.Key.Channel.Length > 2)
+                {
+                    // メインチャンネルを出力していなかったら、ダミーを出力する
+                    if ((last_ch != channel) || (last_subch < 0))
+                    {
+                        last_subch++;
+                        last_ch = channel;
+                        sw.WriteLine($"#{measure:000}{channel}:00");
+                    }
+
+                    // サブチャンネルダミー
+                    last_subch++;
+                    var current_subch = (group.Key.Channel.Length != 4) ? 0 : (int.Parse(group.Key.Channel.Substring(2, 2), System.Globalization.NumberStyles.HexNumber));
+                    for (; last_subch < current_subch; last_subch++)
+                    {
+                        sw.WriteLine($"#{measure:000}{channel}:00");
+                    }
+                } 
+                else
+                {
+                    // メインチャンネル出力
+                    last_ch = channel;
+                    last_subch = 0;
+                }
+
                 // 出力例: #0010A:00001700...
                 // 小節番号3桁＋チャンネル2桁（36進数）＋:＋データ列
-                sw.WriteLine($"#{measure:000}{channel}: {new string(data)}");
+                sw.WriteLine($"#{measure:000}{channel}:{new string(data)}");
             }
             sw.WriteLine("");
 
