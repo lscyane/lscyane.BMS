@@ -332,9 +332,9 @@ namespace lscyane.BMS
                     case "#TOTAL":      bms.Header.TOTAL = int.TryParse(value, out var tot) ? tot : 0; break;
                     case "#LNOBJ":      bms.Header.LNOBJ = value; break;
 
-                    case "#RANDOM": /* TODO */ break;
-                    case "#IF": /* TODO */ break;
-                    case "#ENDIF": /* TODO */ break;
+                    case "#RANDOM": throw new NotSupportedException("Not Supported #RANDOM");
+                    case "#IF": throw new NotSupportedException("Not Supported #IF");
+                    case "#ENDIF": throw new NotSupportedException("Not Supported #ENDIF");
 
                     // 対応予定なし
                     case "#BGMWAV":
