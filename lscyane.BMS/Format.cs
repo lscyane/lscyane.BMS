@@ -48,16 +48,15 @@ namespace lscyane.BMS
         /// <summary>
         /// BMSファイルを書き出す
         /// </summary>
-        /// <param name="path"></param>
-        public void Save(string path, string[] supportedHeaders, Encoding? enc = null)
+        /// <param name="path">保存先パス</param>
+        /// <param name="supportedHeaders">出力するヘッダ</param>
+        /// <param name="enc">文字コード指定</param>
+        public void Save(string path, string[] supportedHeaders, OutputOption? option = null)
         {
             Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
-            if (enc == null)
-            {
-                enc = Encoding.GetEncoding("Shift_JIS");
-            }
+            option ??= new OutputOption();
 
-            using var sw = new System.IO.StreamWriter(path, false, enc);
+            using var sw = new System.IO.StreamWriter(path, false, option.Encoding);
 
             // --------------------------
             // ヘッダ出力
@@ -69,8 +68,7 @@ namespace lscyane.BMS
                 // サポートしていないものは出力しない
                 if ((supportedHeaders.Length != 0) && (supportedHeaders.Any(x => x == key) == false)) return;
                 // 出力
-                var split_h = " ";  // TODO: ヘッダ類の分割記号をスペースにするかコロンにするかオプションで設定する
-                sw.WriteLine($"{key}{split_h}{value}");
+                sw.WriteLine($"{key}{option.HeaderSplitter}{value}");
             }
             WriteHeader("#TITLE", Header.TITLE);
             WriteHeader("#ARTIST", Header.ARTIST);
@@ -97,7 +95,7 @@ namespace lscyane.BMS
             // --------------------------
             // 定義系出力
             // --------------------------
-            var split_d = " ";  // TODO: 定義系の分割記号をスペースにするかコロンにするかオプションで設定する
+            var split_d = option.DefinitionSplitter;
             foreach (var kv in WAV.OrderBy(k => k.Key))
             {
                 // WAV データがある時
