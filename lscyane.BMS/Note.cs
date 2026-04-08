@@ -71,7 +71,10 @@ namespace lscyane.BMS
         {
             if (denominator == 0)
             {
-                throw new DivideByZeroException("Denominator cannot be zero.");
+                // 万が一他の箇所から 0 が渡された場合フォールバックしてデバッグ警告を出力する。
+                System.Diagnostics.Debug.WriteLine("[Warning] FractionalPosition: Denominator was 0, defaulting to 1.");
+                denominator = 1;
+                numerator = 0;
             }
             this.Measure = measure;
             this.Numerator = numerator;
