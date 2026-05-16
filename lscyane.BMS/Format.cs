@@ -265,7 +265,7 @@ namespace lscyane.BMS
                 enc = Encoding.GetEncoding("Shift_JIS");
             }
 
-            var sr = new System.IO.StreamReader(path, enc);
+            using var sr = new System.IO.StreamReader(path, enc);
             while (!sr.EndOfStream)
             {
                 var line = sr.ReadLine()?.Trim();
