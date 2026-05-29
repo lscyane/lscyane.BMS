@@ -90,6 +90,10 @@ namespace lscyane.BMS
             WriteHeader("#PLAYER", Header.PLAYER);
             WriteHeader("#TOTAL", Header.TOTAL);
             WriteHeader("#LNOBJ", Header.LNOBJ);
+            if (Header.LNMODE != 0)
+            {
+                WriteHeader("#LNMODE", Header.LNMODE);
+            }
             sw.WriteLine("");
 
             // --------------------------
@@ -329,6 +333,7 @@ namespace lscyane.BMS
                     case "#PLAYER":     bms.Header.PLAYER = int.TryParse(value, out var ply) ? ply : 0; break;
                     case "#TOTAL":      bms.Header.TOTAL = int.TryParse(value, out var tot) ? tot : 0; break;
                     case "#LNOBJ":      bms.Header.LNOBJ = value; break;
+                    case "#LNMODE":     bms.Header.LNMODE = int.TryParse(value, out var lnmode) ? lnmode : 0; break;
 
                     case "#RANDOM": throw new NotSupportedException("Not Supported #RANDOM");
                     case "#IF": throw new NotSupportedException("Not Supported #IF");

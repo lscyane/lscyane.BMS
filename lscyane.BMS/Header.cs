@@ -66,6 +66,14 @@ namespace lscyane.BMS
         /// <summary> ロングノート終端定義 </summary>
         public string LNOBJ { get; set; } = string.Empty;
 
+        /// <summary> ロングノートの種類指定 </summary>
+        /// <remarks>
+        /// 1: 始点のみに判定がある。
+        /// 2: 始点と終点に判定がある。(本家の CN:チャージノーツ と同じ)
+        /// 3: 始点と終点、途中にも判定がある。(本家の HCN:ヘルチャージノーツ やSDVXの ロングオブジェクトなどと同じ)
+        /// </remarks>
+        public int LNMODE { get; set; } = 0;
+
         /// <summary> 乱数処理 </summary>
         public int Random { get; set; }
 
