@@ -28,6 +28,8 @@ namespace lscyane.BMS
         public Dictionary<string, double> BPMDefs { get; } = new Dictionary<string, double>();
         /// <summary> STOP定義 </summary>
         public Dictionary<string, double> STOP { get; } = new Dictionary<string, double>();
+        /// <summary> SCROLL定義 </summary>
+        public Dictionary<string, double> SCROLL { get; } = new Dictionary<string, double>();
 
         /// <summary> 小節の短縮 (小節拡大率) </summary> <remarks> Key:小節番号 Value:拡大率 </remarks>
         public Dictionary<int, double> BarMagnification { get; } = new Dictionary<int, double>();
@@ -155,6 +157,14 @@ namespace lscyane.BMS
                 if (double.IsNaN(kv.Value) == false)
                 {
                     sw.WriteLine($"#STOP{kv.Key,2}{split_d}{kv.Value}");
+                }
+            }
+            sw.WriteLine("");
+            foreach (var kv in SCROLL.OrderBy(k => k.Key))
+            {
+                if (double.IsNaN(kv.Value) == false)
+                {
+                    sw.WriteLine($"#SCROLL{kv.Key,2}{split_d}{kv.Value}");
                 }
             }
 
@@ -410,6 +420,14 @@ namespace lscyane.BMS
                 if (!double.TryParse(value, out var stpValue))
                     return false;
                 bms.STOP[idStr] = stpValue;
+                return true;
+            }
+            else if (key.StartsWith("#SCROLL"))
+            {
+                var idStr = key.Substring(7, 2); // "01" 部分
+                if (!double.TryParse(value, out var scrollValue))
+                    return false;
+                bms.SCROLL[idStr] = scrollValue;
                 return true;
             }
             return false; // 処理可能な定義ではない
