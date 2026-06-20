@@ -3,6 +3,20 @@
   <PropertyGroup>
     <TargetFramework>netstandard2.1</TargetFramework>
     <Nullable>enable</Nullable>
+    <PackageId>lscyane.BMS</PackageId>
+    <Authors>lscyane</Authors>
+    <Company>Tea Sound Project</Company>
+    <CompanyShortName>TSP</CompanyShortName>
+    <Copyright>(C) 2026 lscyane</Copyright>
+    <Description>Be-Music Source file Library for lscyane</Description>
+    <RepositoryUrl>https://github.com/lscyane/lscyane.BMS</RepositoryUrl>
+    <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression> 
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <VersionPrefix>0.0.1</VersionPrefix>
+    <VersionSuffix></VersionSuffix>
+    <BuildNumber>1</BuildNumber>
   </PropertyGroup>
 
   <ItemGroup>
