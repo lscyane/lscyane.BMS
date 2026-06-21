@@ -4,10 +4,10 @@
     <TargetFramework>netstandard2.1</TargetFramework>
     <Nullable>enable</Nullable>
     <PackageId>lscyane.BMS</PackageId>
-    <Authors>lscyane</Authors>
+    <Authors>茶音 麦粉 (@lscyane)</Authors>
     <Company>Tea Sound Project</Company>
     <CompanyShortName>TSP</CompanyShortName>
-    <Copyright>(C) 2026 lscyane</Copyright>
+    <Copyright>(C) 2025-2026 茶音 麦粉 (@lscyane)</Copyright>
     <Description>Be-Music Source file Library for lscyane</Description>
     <RepositoryUrl>https://github.com/lscyane/lscyane.BMS</RepositoryUrl>
     <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression> 
