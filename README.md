@@ -1,32 +1,28 @@
 # lscyane.BMS
 
-BMSフォーマットのパーサー（.NET Standard 2.1 ライブラリ）。BMSファイルの読み込み・書き出しに対応します。
+[![Nuget](https://img.shields.io/nuget/vpre/lscyane.BMS.svg?style=for-the-badge)](https://www.nuget.org/packages/lscyane.BMS/)
 
-A parser library for the BMS file format targeting .NET Standard 2.1. Supports reading and writing BMS files.
+BMSフォーマットのパーサー（.NET Standard 2.1 ライブラリ）。  
+BMS系ファイルの読み込み・書き出しに対応します。
 
-- License: Apache License 2.0 (see `LICENSE`)
-- No NuGet package; consume via project reference
-- Language: 日本語 / English
+A parser library for the BMS file format targeting .NET Standard 2.1.  
+Supports reading and writing BMS files.
 
 ## Features / 機能
-- Headers: `#TITLE`, `#ARTIST`, `#SUBARTIST` (parse only), `#GENRE`, `#COMMENT`, `#PANEL`, `#PREVIEW`, `#PREIMAGE`, `#STAGEFILE`, `#BACKGROUND`, `#RESULTIMAGE`, `#BPM`, `#DLEVEL`, `#GLEVEL`, `#BLEVEL`, `#PLAYLEVEL`, `#RANK`, `#PLAYER`, `#TOTAL`, `#LNOBJ`
+- Headers: `#TITLE`, `#ARTIST`, `#SUBARTIST`, `#GENRE`, `#COMMENT`, `#PANEL`, `#PREVIEW`, `#PREIMAGE`, `#STAGEFILE`, `#BACKGROUND`, `#RESULTIMAGE`, `#BPM`, `#DLEVEL`, `#GLEVEL`, `#BLEVEL`, `#PLAYLEVEL`, `#RANK`, `#PLAYER`, `#TOTAL`, `#LNOBJ`
 - Definitions: `#WAVxx`, `#VOLUMExx`, `#PANxx`, `#BMPxx`, `#AVIxx`, `#BPMxx`, `#STOPxx`
 - Notes: general channels, BGM channel `01` sub-channel handling, bar magnification `#mmm02:<rate>`
 - Free text passthrough for unknown lines
 
 Limitations / 制限事項:
 - `#RANDOM` / `#IF` / `#ENDIF` are not implemented (TODO)
-- `#SUBARTIST` is parsed but currently not emitted on save
 
 ## Target / 対応環境
 - `netstandard2.1`
-- Works on: .NET Core 3.0+ / .NET 5+ / .NET 6+ / .NET 7+ / .NET 8+
 - Note: .NET Framework is not supported by .NET Standard 2.1
 
 ## Install / 導入方法
-This repository contains a class library `lscyane.BMS`.
-- Add a project reference from your application to `lscyane.BMS/lscyane.BMS.csproj`.
-- Or copy the source files into your solution if preferred.
+[NuGet](https://www.nuget.org/packages/lscyane.BMS/) or this repository contains a class library `lscyane.BMS`.
 
 Example (CLI):
 - `dotnet build`
