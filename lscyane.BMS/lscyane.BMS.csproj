@@ -14,9 +14,9 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <VersionPrefix>0.0.1</VersionPrefix>
+    <VersionPrefix>0.0.2</VersionPrefix>
     <VersionSuffix></VersionSuffix>
-    <BuildNumber>1</BuildNumber>
+    <BuildNumber>2</BuildNumber>
   </PropertyGroup>
 
   <ItemGroup>
