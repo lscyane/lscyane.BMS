@@ -370,15 +370,17 @@ namespace lscyane.BMS
         /// <returns>true:定義系  false:定義系ではなかった</returns>
         static bool ParseDefinition(Format bms, string line)
         {
-            // 定義系 (#WAV01 xxx.wav)
-            if (!line.Contains(" ")) return false;
-            var parts = line.Replace('\t',' ').Split(' ', 2, StringSplitOptions.RemoveEmptyEntries);
-            if (parts.Length < 2) return false;
-            var key = parts[0].Trim().ToUpperInvariant();
-            var value = parts[1].Trim();
+            // 定義系 (#WAV01 xxx.wav) の抽出
+            line = line.Replace(':', ' ');                  // 分割記号を空白に統一
+            if (!line.Contains(" ")) return false;          // 分割記号(空白)がない場合は定義系ではない
+            var parts = line.Replace('\t',' ').Split(' ', 2, StringSplitOptions.RemoveEmptyEntries);    // 空白で分割
+            if (parts.Length < 2) return false;             // 分割出来ていなければ定義系ではない
+            var key = parts[0].Trim().ToUpperInvariant();   // 定義名を大文字で統一
+            var value = parts[1].Trim();                    // 値
+
             if (key.StartsWith("#WAV"))
             {
-                var idStr = key.Substring(4,2); // "01" 部分
+                var idStr = key.Substring(4, 2); // "01" 部分
                 bms.WAV[idStr] = new Table(value);
                 return true;
             }
@@ -396,7 +398,7 @@ namespace lscyane.BMS
             }
             else if (key.StartsWith("#BMP"))
             {
-                var idStr = key.Substring(4,2); // "01" 部分
+                var idStr = key.Substring(4, 2); // "01" 部分
                 bms.BMP[idStr] = new Table(value);
                 return true;
             }
@@ -408,7 +410,7 @@ namespace lscyane.BMS
             }
             else if (key.StartsWith("#BPM"))
             {
-                var idStr = key.Substring(4,2); // "01" 部分
+                var idStr = key.Substring(4, 2); // "01" 部分
                 if (!double.TryParse(value, out var bpmValue))
                     return false;
                 bms.BPMDefs[idStr] = bpmValue;
