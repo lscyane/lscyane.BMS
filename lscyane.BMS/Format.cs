@@ -40,6 +40,9 @@ namespace lscyane.BMS
         /// <summary> フリーテキスト </summary>
         public string FreeText = string.Empty;
 
+        /// <summary> 書き込み用に FreeText とは別に保持するテキスト </summary>
+        public string BlindFreeText = string.Empty;
+
 
         #region テンポラリ変数
         int beforeMeasure = -1;
@@ -259,6 +262,7 @@ namespace lscyane.BMS
             // FreeText 出力
             // --------------------------
             sw.WriteLine("");
+            sw.WriteLine(this.BlindFreeText);
             sw.WriteLine(this.FreeText);
             sw.WriteLine("");
 
