@@ -379,7 +379,7 @@ namespace lscyane.BMS
             if (!line.Contains(" ")) return false;          // 分割記号(空白)がない場合は定義系ではない
             var parts = line.Replace('\t',' ').Split(' ', 2, StringSplitOptions.RemoveEmptyEntries);    // 空白で分割
             if (parts.Length < 2) return false;             // 分割出来ていなければ定義系ではない
-            var key = parts[0].Trim().ToUpperInvariant();   // 定義名を大文字で統一
+            var key = parts[0].Trim();                      // 定義名
             var value = parts[1].Trim();                    // 値
 
             if (key.StartsWith("#WAV"))

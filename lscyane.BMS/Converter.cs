@@ -9,9 +9,9 @@ namespace lscyane.BMS
         /// <summary>
         /// 汎用 数値から文字列への変換
         /// </summary>
-        /// <param name="value"></param>
-        /// <param name="baseNum"></param>
-        /// <param name="digit"></param>
+        /// <param name="value">数値</param>
+        /// <param name="baseNum">基数：10,16,36,62のいずれかを指定してください</param>
+        /// <param name="digit">桁数(0パディングします)</param>
         /// <returns></returns>
         /// <exception cref="ArgumentOutOfRangeException"></exception>
         public static string IntToString(int value, int baseNum, int digit = 0)
@@ -21,7 +21,8 @@ namespace lscyane.BMS
                 10 => value.ToString(),
                 16 => value.ToString("X"),
                 36 => IntToBase36(value, digit),
-                _ => throw new ArgumentOutOfRangeException()
+                62 => IntToBase62(value, digit),
+                _ => throw new ArgumentOutOfRangeException("Please specify baseNum as 10, 16, 36, or 62.")
             };
             retval = retval.PadLeft(digit, '0');
 
@@ -89,6 +90,50 @@ namespace lscyane.BMS
             {
                 s = chars[value % 36] + s;
                 value /= 36;
+            } while (value > 0);
+
+            return s.PadLeft(digit, '0');
+        }
+
+
+        /// <summary>
+        /// 62進数パーサー
+        /// </summary>
+        public static bool TryParseBase62(string s, out int result)
+        {
+            result = 0;
+            if (string.IsNullOrEmpty(s)) return false;
+
+            foreach (var c in s)
+            {
+                int val;
+                if (c >= '0' && c <= '9') val = c - '0';
+                else if (c >= 'A' && c <= 'Z') val = c - 'A' + 10;
+                else if (c >= 'a' && c <= 'z') val = c - 'a' + 36;
+                else return false; // 0-9/A-Z/a-z以外は不可
+
+                result = result * 62 + val;
+            }
+            return true;
+        }
+
+
+        /// <summary>
+        /// int → 62進数文字列に変換
+        /// </summary>
+        /// <param name="value">値</param>
+        /// <param name="digit">出力桁数</param>
+        /// <returns>62進数文字列</returns>
+        public static string IntToBase62(int value, int digit)
+        {
+            const string chars = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
+            if (value < 0) throw new ArgumentOutOfRangeException(nameof(value));
+
+            string s = "";
+            do
+            {
+                s = chars[value % 62] + s;
+                value /= 62;
             } while (value > 0);
 
             return s.PadLeft(digit, '0');
