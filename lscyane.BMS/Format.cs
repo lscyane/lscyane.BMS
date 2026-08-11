@@ -280,7 +280,10 @@ namespace lscyane.BMS
             Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
             if (enc == null)
             {
-                enc = Encoding.GetEncoding("Shift_JIS");
+                // エンコーディングを自動判別
+                byte[] fileBytes = System.IO.File.ReadAllBytes(path);
+                var charSet = Hnx8.ReadJEnc.ReadJEnc.JP.GetEncoding(fileBytes, fileBytes.Length, out string text);
+                enc = charSet?.GetEncoding() ?? Encoding.GetEncoding("Shift_JIS");
             }
 
             using var sr = new System.IO.StreamReader(path, enc);
